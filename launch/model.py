@@ -38,8 +38,9 @@ class Model(object):
 
     self.model = model
 
-    print ('acc:%f\nf1:%f\nprec:%f\nrecall:%f' % (acc, f1, prec, recall))
-    print (str(cm))
+    if self.etl.data.verbose:
+      print ('acc:%f\nf1:%f\nprec:%f\nrecall:%f' % (acc, f1, prec, recall))
+      print (str(cm))
 
   def predict(self, records, history):
     ty = []
@@ -62,6 +63,17 @@ class Model(object):
     for (y, p, d) in zip(ty, ps, data):
       print ('%d %2d : %2d   (%s : %s) - %s' % (y == p, y, p, self.etl._index_to_rest(y), self.etl._index_to_rest(p), str(d)))
 
+  def predict_one(self, record):
+    days = -self.etl.data.reference_days
+    data = self.etl.data.training_data[days:].copy()
+    data += [record]
+    history = [r[1] for r in data[days:]]
+
+    (ty, ps) = self.predict(data, history)
+
+    result = self.etl._index_to_rest(ps[-1])
+
+    return result
 
 def main():
   if len(sys.argv) == 2:
@@ -78,7 +90,9 @@ def main():
 
   model = Model(etl)
   model.train()
-  model.test(data.testing_data)
+  #model.test(data.testing_data)
+  result = model.predict_one(data.testing_data[-1])
+  print (result)
 
 if __name__ == "__main__":
     main()

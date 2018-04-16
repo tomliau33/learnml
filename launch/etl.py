@@ -113,7 +113,8 @@ class Etl(object):
       history.popleft()
       history.append(record[1])
   
-    print ("Total records: %d" % len(features))
+    if self.data.verbose:
+      print ("Total records: %d" % len(features))
 
     return features
 

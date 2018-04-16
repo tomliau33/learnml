@@ -11,10 +11,11 @@ DEFAULT_TRAINDATA='data/train_data.csv'
 DEFAULT_TESTDATA='data/test_data.csv'
 
 class Data(object):
-  def __init__(self, train_ds=DEFAULT_TRAINDATA, test_ds=DEFAULT_TESTDATA, reference_days=3):
+  def __init__(self, train_ds=DEFAULT_TRAINDATA, test_ds=DEFAULT_TESTDATA, reference_days=3, verbose=False):
     self.train_ds = train_ds
     self.test_ds = test_ds
     self.reference_days = reference_days
+    self.verbose = verbose
 
     self.training_data = []
     self.testing_data = []
@@ -84,13 +85,14 @@ class Data(object):
     else:
       self.testing_data = self._load_csv(self.test_ds, False)
 
-    print("Training data:")
-    for r in self.training_data:
-      print(str(r))
+    if self.verbose:
+      print("Training data:")
+      for r in self.training_data:
+        print(str(r))
 
-    print("Testing data:")
-    for r in self.testing_data:
-      print(str(r))
+      print("Testing data:")
+      for r in self.testing_data:
+        print(str(r))
 
 def main():
   data = Data()
