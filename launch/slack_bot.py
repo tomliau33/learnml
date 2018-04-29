@@ -60,7 +60,7 @@ class SlackBot(object):
     return "可以考慮吃%s" % (self.predict())
 
   def fillform(self, message):
-    return "若希望小弟推薦餐廳, 請先到 %s 填寫今天的資料" % ('https://docs.google.com/forms/d/e/1FAIpQLSfYw6-btEaXkxtOzQFbs3eVOrsWEcE46sVurgGRW-q88ob_8w/viewform')
+    return "若希望小弟推薦餐廳, 請先到 %s 填寫今天的資料" % ('https://somewhere.to.edit.form')
 
   def ask(self, message):
     for cmd, item in self.commands.items():
