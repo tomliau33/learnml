@@ -57,10 +57,10 @@ class Data(object):
 
     # 產生訓練資料
     data = []
-    records = zip(df['成員'].values, df['餐廳名'].values, df['天氣'])
-    for (member, restaurant, weather) in records:
+    records = zip(df['成員'].values, df['餐廳名'].values, df['天氣'], df['溫度'])
+    for (member, restaurant, weather, temperature) in records:
         users = member.split(', ')
-        data.append([users, restaurant, weather])
+        data.append([users, restaurant, weather, temperature])
   
     return data
 
@@ -68,7 +68,11 @@ class Data(object):
     response = urllib.request.urlopen(url)
     csv = response.read()
 
-    csvfilename = datetime.datetime.today().strftime('history/%Y%m%d.csv')
+    if is_update_config:
+      csvfilename = datetime.datetime.today().strftime('history/%Y%m%d.csv')
+    else:
+      csvfilename = datetime.datetime.today().strftime('history/test_%Y%m%d.csv')
+
     with open(csvfilename, 'wb') as f:
       f.write(csv)
 

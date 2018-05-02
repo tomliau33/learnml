@@ -8,15 +8,19 @@ from etl import Etl
 from model import Model
 
 class SlackBot(object):
-  def __init__(self, slack_token, training_url, testing_url):
+  def __init__(self, slack_token, training_url, testing_url, form_url):
     self.slack_client = SlackClient(slack_token)
     self.training_url = training_url
     self.testing_url = testing_url
+    self.form_url = form_url
     self.botid= None
     self.commands = {
       'fillform': (['fill', 'form', '填表'], 'fillform'),
       'wheretoday': (['eat', 'what', 'where', 'predict', '吃什麼', '吃哪裡', '吃哪間'], 'wheretoday')
     }
+
+    self.today_data = None
+    self.today_suggestion = None
 
   def predict(self):
     data = Data(self.training_url, self.testing_url)
@@ -28,8 +32,8 @@ class SlackBot(object):
     model = Model(etl)
     model.train()
     #model.test(data.testing_data)
-    result = model.predict_one(data.testing_data[-1])
-    return result
+    self.today_data = data.testing_data[-1]
+    self.today_suggestion = model.predict_one(self.today_data)
 
   def parse_messages(self, received_events):
     for event in received_events:
@@ -57,10 +61,18 @@ class SlackBot(object):
     return message
 
   def wheretoday(self, message):
-    return "可以考慮吃%s" % (self.predict())
+    self.predict()
+
+    if self.today_data:
+      reply_msg = '今天成員有%s\n天氣%s, 氣溫為%d度\n' % (self.today_data[0], self.today_data[2], int(self.today_data[3]))
+    else:
+      reply_msg = ''
+
+    reply_msg += "可以考慮吃%s" % (self.today_suggestion)
+    return reply_msg
 
   def fillform(self, message):
-    return "若希望小弟推薦餐廳, 請先到 %s 填寫今天的資料" % ('https://somewhere.to.edit.form')
+    return "若希望小弟推薦餐廳, 請先到 %s 填寫今天的資料(只需填寫\"天氣\"，\"溫度\"及\"成員\")" % (self.form_url)
 
   def ask(self, message):
     for cmd, item in self.commands.items():
@@ -79,7 +91,7 @@ class SlackBot(object):
         針對用戶傳入的 message 回應訊息
     """
     # Default response is help text for the user
-    default_response = "可以試著問吃什麼"
+    default_response = "可以試著問吃什麼或填表"
 
     response = None
     response = self.ask(message)
@@ -112,6 +124,7 @@ if __name__ == "__main__":
 
   training_url = sys.argv[1]
   testing_url = sys.argv[2]
+  form_url = 'https://somewhere.to.fill.form'
 
   slack_token = os.environ.get('SLACK_BOT_TOKEN')
 
@@ -119,6 +132,6 @@ if __name__ == "__main__":
     print('Must set SLACK_BOT_TOKEN environment variable!')
     sys.exit(1)
 
-  bot = SlackBot(slack_token, training_url, testing_url)
+  bot = SlackBot(slack_token, training_url, testing_url, form_url)
   bot.begin()
 

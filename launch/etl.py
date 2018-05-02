@@ -89,7 +89,7 @@ class Etl(object):
     return pd.concat(all, axis=1)
 
   def _process_one_record(self, record, history):
-    (member, restaurant, weather) = record
+    (member, restaurant, weather, temperature) = record
     
     member_features = self._generate_member_features(member)
     restauratn_features = self._generate_restaurant_features(history)
@@ -97,8 +97,8 @@ class Etl(object):
     count_features = self._generate_count_features(['count%d' % len(member)])
     
     others = pd.DataFrame(
-        [[self._rest_to_index(restaurant)]], 
-        columns=['answer']
+        [[temperature, self._rest_to_index(restaurant)]], 
+        columns=['temperature', 'answer']
     )
 
     return pd.concat([member_features, restauratn_features, weather_features, count_features, others], axis=1)

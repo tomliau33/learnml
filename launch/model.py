@@ -7,6 +7,7 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import learning_curve
 
 from data import Data
 from etl import Etl
@@ -21,8 +22,8 @@ class Model(object):
     X = self.etl.training_etldata.drop('answer', 1)
 
     #model = LogisticRegression()
-    model = DecisionTreeClassifier()
-    #model = RandomForestClassifier()
+    #model = DecisionTreeClassifier()
+    model = RandomForestClassifier()
     model = model.fit(X, y)
 
     ty = self.etl.testing_etldata['answer'].values
@@ -55,6 +56,11 @@ class Model(object):
         tX = tX.append(feature)
 
     ps = self.model.predict(tX)
+    
+    if self.etl.data.verbose:
+      class_probabilities = self.model.predict_proba(tX)
+      print (str(class_probabilities))
+
     return (ty, ps)
   
   def test(self, data):
@@ -65,7 +71,7 @@ class Model(object):
 
   def predict_one(self, record):
     days = -self.etl.data.reference_days
-    data = self.etl.data.training_data[days:].copy()
+    data = self.etl.data.training_data.copy()
     data += [record]
     history = [r[1] for r in data[days:]]
 
