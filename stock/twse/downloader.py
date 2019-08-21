@@ -55,6 +55,7 @@ class Downloader(object):
               break
             elif rjson["stat"] == "很抱歉，沒有符合條件的資料!":
               print("Not found, date is {}".format(d))
+              successful = True
               break
             else:
               print('Download fail, date is {}, stat is "{}"'.format(d, rjson['stat']))
@@ -76,6 +77,9 @@ class Downloader(object):
 def get_dates(datestr, output_folder):
   dates = []
 
+  if datestr == 'auto':
+    datestr = 'auto-now'
+
   if datestr == 'today' or datestr == 'now':
     d = datetime.now()
     dates.append('{}{}{}'.format(d.year, str(d.month).zfill(2), str(d.day).zfill(2)))
@@ -96,7 +100,10 @@ def get_dates(datestr, output_folder):
       else:
         filenames.sort()
         ds = filenames[-1].split('.')[0]
-        start = datetime(year=int(ds[:4]), month=int(ds[4:6]), day=int(ds[6:8]))
+        start = datetime(year=int(ds[:4]), month=int(ds[4:6]), day=int(ds[6:8])) + timedelta(days=1)
+        if start > datetime.now():
+          print('Already update to date!')
+          sys.exit(0)
     else:
       start = datetime(year=int(sstart[:4]), month=int(sstart[4:6]), day=int(sstart[6:8]))
 
@@ -135,6 +142,7 @@ def main():
     print('Usage: {} [t86|mindex] [dates.txt] [output_folder]'.format(sys.argv[0]))
     sys.exit(0)
 
+  print("Mode is {}".format(sys.argv[1]))
   dates = get_dates(sys.argv[2], sys.argv[3])
 
   if len(dates) >= 2:
@@ -143,7 +151,6 @@ def main():
     print("Date is {}".format(dates[0]))
   else:
     print("Date is empty")
-  return
 
   downloader = Downloader(
       urls[sys.argv[1]],
